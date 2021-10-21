@@ -1,9 +1,9 @@
 `include "interface_de_transacciones.sv"
-`include "Generador.sv"
-`include "Agente.sv"
-`include "Driver.sv"
-`include "Checker.sv"
-`include "Monitor.sv"
+`include "generador.sv"
+`include "agente.sv"
+`include "driver.sv"
+`include "checker.sv"
+`include "monitor.sv"
 
 class Ambiente #(parameter pckg_sz,num_trans,ROWS,COLUMS,FIFO_D);
   

@@ -1,4 +1,4 @@
-`include "Ambiente.sv"
+`include "ambiente.sv"
 class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS,num);
   int tiempo_final=500000;
   int delay_total=0; 

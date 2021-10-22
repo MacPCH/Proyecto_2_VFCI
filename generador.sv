@@ -13,7 +13,7 @@ class Generador #(parameter pckg_sz, num_trans, ROWS,COLUMS);
         if(test_generador_mbx.num() > 0)begin
       
       test_generador_mbx.try_get(instruccion_especifica);
-      $display("Que hay aqui: %s", instruccion_especifica.tipo);	
+      //$display("Que hay aqui: %s", instruccion_especifica.tipo);	
       
   
         case(instruccion_especifica.tipo)

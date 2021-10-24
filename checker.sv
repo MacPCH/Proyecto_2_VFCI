@@ -129,7 +129,6 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
                             delays.insert(j,time_delay);
                               $display("t = %0d: Checker: Dispositivo que llega del DUT: %d, dispositivo esperado: %d", $time, paquete_monitor.dispo_entrada, scb[i].dispo_entrada);
                               $display("t = %0d: Checker: Dato que llega del DUT: %d, dato esperado: %d", $time, paquete_monitor.data, scb[i].empaquetado[pckg_sz-9:0]);
-                              $display("t = %0d: Checker: Todo bien, todo correcto y yo que me alegro", $time);
                               for (int k=0; k<16; k++) 
                               begin
                                 if (k==scb[i].dispo_entrada)

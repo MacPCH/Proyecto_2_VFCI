@@ -1,20 +1,23 @@
 class Agente #(pckg_sz,ROWS,COLUMS);  
-  mailbox agente_mbx;
-  mailbox driver_mbx;
+  mailbox agente_mbx; //mailbox del generador al agente
+  mailbox driver_mbx; //mailbox del agente al driver
   mailbox gen_mbx;
-  mailbox checker_mbx;
+  mailbox checker_mbx; //mailbox del agente al checker
   event agente_listo;
   event generador_listo;
   task run();
+  int contador = 0;
     
-    la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) trans=new; 
+    la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) trans=new;  //declaro e instancio la transacción que va hacia el driver
     $display ("El agente fue inicializado");
-  forever begin
+  forever begin //se crea un ciclo repetitivo
     @(generador_listo) begin
       if (agente_mbx.num() != 0) $display("t = %g: Agente: Recibida una orden desde el generador", $time);
-       agente_mbx.get(trans);
+       agente_mbx.get(trans); //se obtiene la transacción que se haya enviado del agente
       
     case(trans.dispo_entrada)
+      // A partir de aquí se define la trama de datas que sigue el DUT para cada dispositivo
+      // En el siguiente orden: Next Jump(8bits)->ROW(4 bits)-COLUMN(4 bits)->MODO(1 bit)->Payload (n bits)
       0: 
         trans.empaquetado={{8'b0},{4'b0},{4'b0001},trans.modo,trans.mensaje};
       1:
@@ -51,12 +54,19 @@ class Agente #(pckg_sz,ROWS,COLUMS);
         trans.empaquetado={{8'b0},{4'b1},{4'b1},{1'b0},trans.mensaje};
       endcase
       trans.tiempo_envio=$time;
-      driver_mbx.put(trans);
-      $display("t = %g: Agente: Enviada la transaccion a el driver, dato = %0d", $time, trans.mensaje);
-      checker_mbx.put(trans);
-      $display("t = %g: Agente: Enviada la transaccion a el checker", $time);
-      ->agente_listo;
+      driver_mbx.put(trans); //envío la transacccion hacia el driver
+      checker_mbx.put(trans); //envío la transacccion hacia el checker
+      $display("t = %g: Agente: Enviada la transaccion a el driver y checker, fila=  dato= %0d", $time,trans.empaquetado);
+      contador++;
+      $display("t = %g: Agente: Enviada la transaccion %0d de %0d", $time, contador, trans.num_transacciones);
+      if (contador == trans.num_transacciones) begin
+      	->agente_listo; //se activa el evento
+        contador = 0;
+        //$display("Agente: Agente listo");
+      end
+      
       end
     end
   endtask
  endclass
+

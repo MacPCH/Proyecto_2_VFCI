@@ -2,10 +2,9 @@
 //VERIFICACIÓN FUNCIONAL DE CIRCUITOS INTEGRADOS
 //Proyecto 2
 //Lenguaje: SystemVerilog
-//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
+//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com) - Susana Astorga Rodríguez (susana.0297.ar@gmail.com)
 
-
-`include "Ambiente.sv"
+`include "ambiente.sv"
 class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
   int tiempo_final=500000;
   int delay_total=0; 

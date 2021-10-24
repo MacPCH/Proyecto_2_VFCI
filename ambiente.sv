@@ -1,41 +1,46 @@
 `include "interface_de_transacciones.sv"
-`include "generador.sv"
-`include "agente.sv"
-`include "driver.sv"
-`include "checker.sv"
-`include "monitor.sv"
+`include "Generador.sv"
+`include "Agente.sv"
+`include "Driver.sv"
+`include "Checker.sv"
+`include "Monitor.sv"
 
-class Ambiente #(parameter pckg_sz,num_trans,ROWS,COLUMS,FIFO_D);
-  
-  Generador #(pckg_sz, num_trans,ROWS,COLUMS) generador_instancia;
+class Ambiente #(parameter pckg_sz,ROWS,COLUMS,FIFO_D);
+  // Declaración de los componentes del ambiente
+  Generador #(pckg_sz, ROWS, COLUMS) generador_instancia;
   Agente #(pckg_sz,ROWS,COLUMS) agente_instancia;
   driver #(pckg_sz, FIFO_D, ROWS, COLUMS) driver_instancia;
   Checker #(pckg_sz, ROWS,COLUMS, FIFO_D) checker_instancia;
   monitor #(.pckg_sz(pckg_sz), .FIFO_depth(FIFO_D), .ROWS(ROWS), .COLUMS(COLUMS)) monitor_instancia;
-  mailbox agente_mbx;
+  //instancio todos los buzones que ocupa el TB
+  mailbox agente_mbx; 
   mailbox driver_mbx;
   mailbox checker_mbx;
   mailbox monitor_mbx;
-  comando_test_generador_mbx test_generador_mbx;
+  comando_test_generador_mbx test_generador_mbx; 
   
   event monitor_listo;
   event generador_listo;
   event agente_listo; 
   event monitor_listo;
-  virtual mesh_if #(pckg_sz,ROWS,COLUMS) interface_virtual;
+  event driver_listo;
+  virtual mesh_if #(pckg_sz,ROWS,COLUMS) interface_virtual; //instancio la interfaz del TB
   
   
   function new();
+    // instanciación de los componentes del ambiente
     generador_instancia=new;
     agente_instancia=new;
     driver_instancia=new;
     checker_instancia=new;
     monitor_instancia=new;
+    // Instanciación de los mailboxes
     checker_mbx=new();
-     agente_mbx=new();
+    agente_mbx=new();
     driver_mbx=new();
     monitor_mbx=new();
     test_generador_mbx = new();
+    // conexion de las interfaces y mailboxes en el ambiente
     generador_instancia.test_generador_mbx = test_generador_mbx;
     monitor_instancia.monitor_mbx=monitor_mbx;
     checker_instancia.monitor_mbx=monitor_mbx;
@@ -54,21 +59,21 @@ class Ambiente #(parameter pckg_sz,num_trans,ROWS,COLUMS,FIFO_D);
     driver_instancia.agente_listo=agente_listo;
   endfunction
   
-  virtual task run();
+  virtual task run(); //se inicializa el ambiente
     driver_instancia.interface_virtual=interface_virtual;
     monitor_instancia.interface_virtual=interface_virtual;
     fork
     generador_instancia.run();
     agente_instancia.run();
-      //driver_instancia.FIFO_creation();
       driver_instancia.run();
-      driver_instancia.parallel_fifo_sample();
+      driver_instancia.FIFO_DUT();
       checker_instancia.run();
       monitor_instancia.check();
       checker_instancia.check();
       checker_instancia.delay_terminal_prom();
-    join_any
-    #600000 
+    join
+    //#600000 
     disable fork;
   endtask
 endclass
+      

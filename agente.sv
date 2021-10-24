@@ -1,3 +1,9 @@
+//INSTITUTO TECNOLÓGICO DE COSTA RICA
+//VERIFICACIÓN FUNCIONAL DE CIRCUITOS INTEGRADOS
+//Proyecto 2
+//Lenguaje: SystemVerilog
+//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
+
 class Agente #(pckg_sz,ROWS,COLUMS);  
   mailbox agente_mbx;
   mailbox driver_mbx;
@@ -6,6 +12,7 @@ class Agente #(pckg_sz,ROWS,COLUMS);
   event agente_listo;
   event generador_listo;
   task run();
+  int contador = 0;
     
     la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) trans=new; 
     $display ("El agente fue inicializado");
@@ -15,6 +22,8 @@ class Agente #(pckg_sz,ROWS,COLUMS);
        agente_mbx.get(trans);
       
     case(trans.dispo_entrada)
+      // A partir de aquí se define la trama de datas que sigue el DUT para cada dispositivo
+      // En el siguiente orden: Next Jump(8bits)->ROW(4 bits)-COLUMN(4 bits)->MODO(1 bit)->Payload (n bits)
       0: 
         trans.empaquetado={{8'b0},{4'b0},{4'b0001},trans.modo,trans.mensaje};
       1:
@@ -52,10 +61,16 @@ class Agente #(pckg_sz,ROWS,COLUMS);
       endcase
       trans.tiempo_envio=$time;
       driver_mbx.put(trans);
-      $display("t = %g: Agente: Enviada la transaccion a el driver, dato = %0d", $time, trans.mensaje);
       checker_mbx.put(trans);
-      $display("t = %g: Agente: Enviada la transaccion a el checker", $time);
-      ->agente_listo;
+      $display("t = %g: Agente: Enviada la transaccion a el driver y checker, fila=  dato= %0d", $time,trans.empaquetado);
+      contador++;
+      $display("t = %g: Agente: Enviada la transaccion %0d de %0d", $time, contador, trans.num_transacciones);
+      if (contador == trans.num_transacciones) begin
+      	->agente_listo;
+        contador = 0;
+        //$display("Agente: Agente listo");
+      end
+      
       end
     end
   endtask

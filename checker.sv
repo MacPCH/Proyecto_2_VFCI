@@ -1,3 +1,9 @@
+//INSTITUTO TECNOLÓGICO DE COSTA RICA
+//VERIFICACIÓN FUNCIONAL DE CIRCUITOS INTEGRADOS
+//Proyecto 2
+//Lenguaje: SystemVerilog
+//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
+
 class Delay_terminal;
   int num_transactions; 
   int delay=0;
@@ -40,6 +46,11 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
         forever begin
           @(agente_listo) 
             begin
+              $display("Checker: Agente listo: ");
+              /*@(monitor_listo) 
+            begin*/
+              forever begin
+                if(checker_mbx.num!=0) begin
                 la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) paquete1 = new();
                 checker_mbx.get(paquete); 
                 paquete1.dispo_salida= paquete.dispo_salida;
@@ -49,7 +60,11 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
                 paquete1.empaquetado=paquete.empaquetado;
                 paquete1.tiempo_envio=paquete.tiempo_envio;
                 paquete1.tiempo_llegada=paquete.tiempo_llegada;
-                scb.push_front(paquete1); 
+                scb.push_front(paquete1);
+                //$display("Checker: Lo que viene del checker ", paquete1);
+            end 
+                if(checker_mbx.num==0) break;
+              end
             end
         end
     endtask
@@ -58,6 +73,8 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
    forever begin
      @(monitor_listo)
         begin
+          $display("Checker: Monitor listo: ");
+          forever begin
           la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) paquete_monitor=new();
             monitor_mbx.get(data_in);
             paquete_monitor.data=data_in;
@@ -99,6 +116,7 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
           paquete_monitor.dispo_entrada=16;
 
     endcase
+          //$display("Checker: Lo que viene del monitor: ", paquete_monitor);
             for (int i=0; i<scb.size(); i++) 
                 begin
                     error=0; 
@@ -109,9 +127,9 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
                             error=1; 
                             time_delay= paquete_monitor.tiempo_llegada-(scb[i].tiempo_envio);
                             delays.insert(j,time_delay);
-                              $display("%0d: Checker: Dispositivo que llega del DUT: %d, dispositivo esperado: %d", $time, paquete_monitor.dispo_entrada, scb[i].dispo_entrada);
-                              $display("%0d: Checker: Dato que llega del DUT: %d, dato esperado: %d", $time, paquete_monitor.data, scb[i].empaquetado[pckg_sz-9:0]);
-                              //$display("%0d: Checker: Todo bien, todo correcto y yo que me alegro", $time);
+                              $display("t = %0d: Checker: Dispositivo que llega del DUT: %d, dispositivo esperado: %d", $time, paquete_monitor.dispo_entrada, scb[i].dispo_entrada);
+                              $display("t = %0d: Checker: Dato que llega del DUT: %d, dato esperado: %d", $time, paquete_monitor.data, scb[i].empaquetado[pckg_sz-9:0]);
+                              $display("t = %0d: Checker: Todo bien, todo correcto y yo que me alegro", $time);
                               for (int k=0; k<16; k++) 
                               begin
                                 if (k==scb[i].dispo_entrada)
@@ -138,6 +156,7 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
 
                 end
                 j=j+1;
+          end
         end
      if (!error) $fatal("ERROR, EL DATO RECIBIDO POR EL DRIVER NO CORRESPONDE A NINGÚN DATO ENVIADO");
     end

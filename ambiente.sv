@@ -1,13 +1,19 @@
-`include "interface_de_transacciones.sv"
-`include "generador.sv"
-`include "agente.sv"
-`include "driver.sv"
-`include "checker.sv"
-`include "monitor.sv"
+//INSTITUTO TECNOLÓGICO DE COSTA RICA
+//VERIFICACIÓN FUNCIONAL DE CIRCUITOS INTEGRADOS
+//Proyecto 2
+//Lenguaje: SystemVerilog
+//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
 
-class Ambiente #(parameter pckg_sz,num_trans,ROWS,COLUMS,FIFO_D);
+`include "interface_de_transacciones.sv"
+`include "Generador.sv"
+`include "Agente.sv"
+`include "Driver.sv"
+`include "Checker.sv"
+`include "Monitor.sv"
+
+class Ambiente #(parameter pckg_sz,ROWS,COLUMS,FIFO_D);
   
-  Generador #(pckg_sz, num_trans,ROWS,COLUMS) generador_instancia;
+  Generador #(pckg_sz, ROWS, COLUMS) generador_instancia;
   Agente #(pckg_sz,ROWS,COLUMS) agente_instancia;
   driver #(pckg_sz, FIFO_D, ROWS, COLUMS) driver_instancia;
   Checker #(pckg_sz, ROWS,COLUMS, FIFO_D) checker_instancia;
@@ -22,6 +28,7 @@ class Ambiente #(parameter pckg_sz,num_trans,ROWS,COLUMS,FIFO_D);
   event generador_listo;
   event agente_listo; 
   event monitor_listo;
+  event driver_listo;
   virtual mesh_if #(pckg_sz,ROWS,COLUMS) interface_virtual;
   
   
@@ -60,15 +67,14 @@ class Ambiente #(parameter pckg_sz,num_trans,ROWS,COLUMS,FIFO_D);
     fork
     generador_instancia.run();
     agente_instancia.run();
-      //driver_instancia.FIFO_creation();
       driver_instancia.run();
-      driver_instancia.parallel_fifo_sample();
+      driver_instancia.FIFO_DUT();
       checker_instancia.run();
       monitor_instancia.check();
       checker_instancia.check();
       checker_instancia.delay_terminal_prom();
-    join_any
-    #600000 
+    join
+    //#600000 
     disable fork;
   endtask
 endclass

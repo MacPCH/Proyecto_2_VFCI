@@ -1,13 +1,18 @@
+//INSTITUTO TECNOLÓGICO DE COSTA RICA
+//VERIFICACIÓN FUNCIONAL DE CIRCUITOS INTEGRADOS
+//Proyecto 2
+//Lenguaje: SystemVerilog
+//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
+
 `include "test.sv"
 module tb();
   reg clk;
   reg reset;
   
-  parameter pckg_sz=40;
-  parameter num_trans=10;
-  parameter ROWS=4;
-  parameter COLUMS=4;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(4)) t0 ;
+  parameter pckg_sz = 40;
+  parameter ROWS = 4;
+  parameter COLUMS = 4;
+  test #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(4)) t0 ;
   
   mesh_if #(pckg_sz,ROWS,COLUMS)_if  (clk,reset); //inteface
   mesh_gnrtr #(ROWS, COLUMS,pckg_sz, 4,{8{1'b1}}) mesh(
@@ -21,18 +26,6 @@ module tb();
     .reset(_if.reset)
 );
   always #10 clk =~ clk;
-
-  
-  /*test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(aleatorio),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(2)) t1 ;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(aleatorio),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(4)) t2 ;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(aleatorio),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(6)) t3 ;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(aleatorio),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(8)) t4 ;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(aleatorio),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(12)) t5 ;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(aleatorio),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(15)) t6 ;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(esquina),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(4)) t7 ;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(overflow),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(2)) t8 ;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(overflow),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(4)) t9 ;
-  test #(.pckg_sz(pckg_sz),.num(num_trans),.esquina(overflow),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(8)) t10 ;*/
 
   
   initial begin

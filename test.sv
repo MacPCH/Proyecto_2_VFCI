@@ -1,13 +1,21 @@
-`include "ambiente.sv"
-class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS,num);
+//INSTITUTO TECNOLÓGICO DE COSTA RICA
+//VERIFICACIÓN FUNCIONAL DE CIRCUITOS INTEGRADOS
+//Proyecto 2
+//Lenguaje: SystemVerilog
+//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
+
+
+`include "Ambiente.sv"
+class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
   int tiempo_final=500000;
   int delay_total=0; 
   int delay_prom;
+  int contador = 1;
   real BW;
   real ab[$];
   string fifo_dp,receive_delay,ID,ab_min,ab_max;
   string outputTXT_line, coma = ",";
-  Ambiente #(.pckg_sz(pckg_sz),.num_trans(num),.esquina(esquina),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(FIFO_D)) ambiente_instancia; //se crea el ambiente
+  Ambiente #(.pckg_sz(pckg_sz),.esquina(esquina),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(FIFO_D)) ambiente_instancia; //se crea el ambiente
   
   comando_test_generador_mbx test_generador_mbx;
   tipos_de_transacciones instruccion_especifica;
@@ -25,40 +33,151 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS,num);
     fork
     	ambiente_instancia.run();
     join_none
-    
-    
     //Primer escenario de pruebas
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" INICIO DEL ESCENARIO %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+   
     instruccion_especifica = new;
-  	instruccion_especifica.tipo = ordenado;
+  	instruccion_especifica.tipo = aleatorio;
+    instruccion_especifica.num_transacciones = 4;
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
+    
+    #10000
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" FIN DEL ESCENARIO %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    
+    #10000
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" FIN DEL ESCENARIO %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
     
     //Segundo escenario de pruebas
-    instruccion_especifica = new;
-  	instruccion_especifica.tipo = aleatorio;
-    $display ("Test: Enviado al generador: ", instruccion_especifica);
-    test_generador_mbx.put(instruccion_especifica);
+    contador++;
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" INICIO DEL ESCENARIO %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
-    //Tercer escenario de pruebas
-    instruccion_especifica = new;
-  	instruccion_especifica.tipo = ordenado;
-    $display ("Test: Enviado al generador: ", instruccion_especifica);
-    test_generador_mbx.put(instruccion_especifica);
-    
-    //Cuarto escenario de pruebas
     instruccion_especifica = new;
   	instruccion_especifica.tipo = overflow;
+    instruccion_especifica.num_transacciones = 3;
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
     
-     //Quinto escenario de pruebas
+    #10000
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" FIN DEL ESCENARIO %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    //Tercer escenario de pruebas y primer test (fila primero)
+    contador++;
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" INICIO DEL ESCENARIO %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador-2);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
     instruccion_especifica = new;
-  	instruccion_especifica.tipo = aleatorio;
+  	instruccion_especifica.tipo = esquina;
+    instruccion_especifica.num_transacciones = 3;
+    instruccion_especifica.esquina = fila_primero;
+    $display ("Test: Enviado al generador: ", instruccion_especifica);
+    test_generador_mbx.put(instruccion_especifica);
+    
+    #10000
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" FIN DEL TEST %0d DE PRUEBAS", contador-2);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    //Tercer escenario de pruebas y segundo test (columna primero)
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador-1);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    instruccion_especifica = new;
+  	instruccion_especifica.tipo = esquina;
+    instruccion_especifica.num_transacciones = 3;
     instruccion_especifica.esquina = columna_primero;
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
     
+    #10000
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" FIN DEL TEST %0d DE PRUEBAS", contador-1);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
+    //Tercer escenario de pruebas y segundo test (error)
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    instruccion_especifica = new;
+  	instruccion_especifica.tipo = esquina;
+    instruccion_especifica.num_transacciones = 3;
+    instruccion_especifica.esquina = error;
+    $display ("Test: Enviado al generador: ", instruccion_especifica);
+    test_generador_mbx.put(instruccion_especifica);
+    
+    #10000
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" FIN DEL TEST %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    //Tercer escenario de pruebas y segundo test (destino igual al origen)
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador+1);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    instruccion_especifica = new;
+  	instruccion_especifica.tipo = esquina;
+    instruccion_especifica.num_transacciones = 3;
+    instruccion_especifica.esquina = destino_igual_origen;
+    $display ("Test: Enviado al generador: ", instruccion_especifica);
+    test_generador_mbx.put(instruccion_especifica);
+    
+    #10000
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" FIN DEL TEST %0d DE PRUEBAS", contador+1);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" FIN DEL ESCENARIO %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
   endtask
   

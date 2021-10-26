@@ -10,6 +10,9 @@ typedef enum {ordenado, esquina, aleatorio, overflow} tipos_trans;//definir los 
 //**************DEFINICION DE LOS CASOS DE ESQUINA**************************
 typedef enum {fila_primero, columna_primero, error, destino_igual_origen} caso_esquina;//definir los casos de generación del test
 
+//**************DEFINICION DE LOS TIPOS DE REPORTES**************************
+typedef enum {retraso_total, retraso_dispositivo, ancho_banda} tipos_reportes;//definir los casos de generación del test
+
 interface mesh_if #(parameter pckg_sz,ROWS,COLUMS)(input bit clk, input bit reset); 
     logic pndng[ROWS*2+COLUMS*2];
     logic [pckg_sz-1:0] data_out[ROWS*2+COLUMS*2];
@@ -41,6 +44,14 @@ class tipos_de_transacciones ;
   tipos_trans tipo; // valor por default
   int num_transacciones;
   caso_esquina esquina;
+  tipos_reportes reportes;
+endclass
+
+class tipos_de_reportes;
+  int num_transacciones;
+  int num_reportes;
+  int profundidad_fifo;
 endclass
 
 typedef mailbox #(tipos_de_transacciones) comando_test_generador_mbx;
+typedef mailbox #(tipos_de_reportes) comando_test_checker_mbx;

@@ -8,23 +8,29 @@
 `include "Ambiente.sv"
 class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
   int tiempo_final=500000;
-  int delay_total=0; 
-  int delay_prom;
+  /*int delay_total=0; 
+  int delay_prom;*/
   int contador = 1;
-  real BW;
+  /*real BW;
   real ab[$];
   string fifo_dp,receive_delay,ID,ab_min,ab_max;
-  string outputTXT_line, coma = ",";
+  string outputTXT_line, coma = ",";*/
   Ambiente #(.pckg_sz(pckg_sz),.esquina(esquina),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(FIFO_D)) ambiente_instancia; //se crea el ambiente
   
   comando_test_generador_mbx test_generador_mbx;
   tipos_de_transacciones instruccion_especifica;
+  comando_test_checker_mbx test_checker_mbx;
+  tipos_de_reportes tipo_reporte;
   
   function new();
     test_generador_mbx = new();
+    test_checker_mbx = new();
     ambiente_instancia = new;
     ambiente_instancia.test_generador_mbx = test_generador_mbx;
     ambiente_instancia.generador_instancia.test_generador_mbx = test_generador_mbx;
+    ambiente_instancia.test_checker_mbx = test_checker_mbx;
+    ambiente_instancia.checker_instancia.test_checker_mbx = test_checker_mbx;
+    
   endfunction
   
   
@@ -46,12 +52,14 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
     
-    #10000
-    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
-    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" FIN DEL ESCENARIO %0d DE PRUEBAS", contador);
-    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
-    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    //num_reportes: 1=ab, 2=retraso_total, 3=retraso_dispositivo, 4=todos, 5=ab y retraso_total 
+    //num_reportes: 6=ab y retraso_dispositivo, 7=retraso_total y retraso_dispositivo
+    tipo_reporte = new();
+    tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
+    tipo_reporte.num_reportes = 1;
+    tipo_reporte.profundidad_fifo = FIFO_D;
+    test_checker_mbx.put(tipo_reporte);
+    $display ("Test: Enviado al checker: ", tipo_reporte);
     
     
     #10000
@@ -71,10 +79,17 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
     instruccion_especifica = new;
-  	instruccion_especifica.tipo = overflow;
-    instruccion_especifica.num_transacciones = 3;
+  	instruccion_especifica.tipo = ordenado;
+    instruccion_especifica.num_transacciones = 16;
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
+    
+    tipo_reporte = new;
+    tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
+    tipo_reporte.num_reportes = 2;
+    tipo_reporte.profundidad_fifo = FIFO_D;
+    $display ("Test: Enviado al checker: ", tipo_reporte);
+    test_checker_mbx.put(tipo_reporte);
     
     #10000
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
@@ -83,7 +98,35 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
-    //Tercer escenario de pruebas y primer test (fila primero)
+    //Tercer escenario de pruebas
+    contador++;
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" INICIO DEL ESCENARIO %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    instruccion_especifica = new;
+  	instruccion_especifica.tipo = overflow;
+    instruccion_especifica.num_transacciones = 6;
+    $display ("Test: Enviado al generador: ", instruccion_especifica);
+    test_generador_mbx.put(instruccion_especifica);
+    
+    tipo_reporte = new;
+    tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
+    tipo_reporte.num_reportes = 4;
+    tipo_reporte.profundidad_fifo = FIFO_D;
+    $display ("Test: Enviado al checker: ", tipo_reporte);
+    test_checker_mbx.put(tipo_reporte);
+    
+    #10000
+    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
+    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
+    $display (" FIN DEL ESCENARIO %0d DE PRUEBAS", contador);
+    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
+    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
+    
+    //Cuarto escenario de pruebas y primer test (fila primero)
     contador++;
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
@@ -93,25 +136,32 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador-2);
+    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador-3);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
     instruccion_especifica = new;
   	instruccion_especifica.tipo = esquina;
-    instruccion_especifica.num_transacciones = 3;
+    instruccion_especifica.num_transacciones = 5;
     instruccion_especifica.esquina = fila_primero;
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
     
+    tipo_reporte = new();
+    tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
+    tipo_reporte.num_reportes = 4;
+    tipo_reporte.profundidad_fifo = FIFO_D;
+    test_checker_mbx.put(tipo_reporte);
+    $display ("Test: Enviado al checker: ", tipo_reporte);
+    
     #10000
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" FIN DEL TEST %0d DE PRUEBAS", contador-2);
+    $display (" FIN DEL TEST %0d DE PRUEBAS", contador-3);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
-    //Tercer escenario de pruebas y segundo test (columna primero)
+    //Cuarto escenario de pruebas y segundo test (columna primero)
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
     $display (" INICIO DEL TEST %0d DE PRUEBAS", contador-1);
@@ -125,17 +175,24 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
     
+    tipo_reporte = new();
+    tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
+    tipo_reporte.num_reportes = 4;
+    tipo_reporte.profundidad_fifo = FIFO_D;
+    test_checker_mbx.put(tipo_reporte);
+    $display ("Test: Enviado al checker: ", tipo_reporte);
+    
     #10000
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" FIN DEL TEST %0d DE PRUEBAS", contador-1);
+    $display (" FIN DEL TEST %0d DE PRUEBAS", contador-2);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
-    //Tercer escenario de pruebas y segundo test (error)
+    //Cuarto escenario de pruebas y segundo test (error)
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador);
+    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador-1);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
@@ -146,17 +203,24 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
     
+    tipo_reporte = new();
+    tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
+    tipo_reporte.num_reportes = 4;
+    tipo_reporte.profundidad_fifo = FIFO_D;
+    test_checker_mbx.put(tipo_reporte);
+    $display ("Test: Enviado al checker: ", tipo_reporte);
+    
     #10000
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" FIN DEL TEST %0d DE PRUEBAS", contador);
+    $display (" FIN DEL TEST %0d DE PRUEBAS", contador-1);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
-    //Tercer escenario de pruebas y segundo test (destino igual al origen)
+    //Cuarto escenario de pruebas y segundo test (destino igual al origen)
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador+1);
+    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
@@ -167,10 +231,17 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
     
+    tipo_reporte = new();
+    tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
+    tipo_reporte.num_reportes = 4;
+    tipo_reporte.profundidad_fifo = FIFO_D;
+    test_checker_mbx.put(tipo_reporte);
+    $display ("Test: Enviado al checker: ", tipo_reporte);
+    
     #10000
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" FIN DEL TEST %0d DE PRUEBAS", contador+1);
+    $display (" FIN DEL TEST %0d DE PRUEBAS", contador);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
@@ -181,62 +252,4 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     
   endtask
   
-  
- 
-  task get_delay();
-    for (int i=0; i< ambiente_instancia.checker_instancia.delays.size(); i++)begin
-      delay_total= (delay_total+ambiente_instancia.checker_instancia.delays[i]); 
-      end
-    delay_prom=(delay_total/ambiente_instancia.checker_instancia.delays.size()); 
-    if (esquina==aleatorio)begin
-      $display("El retraso promedio es de %0d",delay_prom, " ns para una profundidad de Fifo de %0d",FIFO_D);
-    BW= (1000000000/delay_prom); 
-      $display("El ancho de banda promedio es de %0d", BW, " bps para una profundidad de Fifo de %0d",FIFO_D);
-      receive_delay.itoa(delay_prom);
-      fifo_dp.itoa(FIFO_D);
-      outputTXT_line = {fifo_dp,coma,receive_delay};
-      $system($sformatf("echo %0s >> delayprom.csv",outputTXT_line));
-    end
-      else begin
-    $display("El retraso promedio es de %0d",delay_prom, " ns");
-    BW= (1000000000/delay_prom);
-    $display("El ancho de banda promedio es de %0d", BW, " bps");
-      end
-  endtask
-  
-  task get_delay_terminal();
-    for (int i=0; i<16; i++)
-      begin
-        ambiente_instancia.checker_instancia.delay_list[i].delay_prom= ambiente_instancia.checker_instancia.delay_list[i].delay/ (ambiente_instancia.checker_instancia.delay_list[i].num_transactions);
-        if (esquina==aleatorio)begin
-          $display ("La terminal %0d", i, " tiene delay de %0d", ambiente_instancia.checker_instancia.delay_list[i].delay_prom ," ns con una profundidad de Fifo de %0d",FIFO_D);
-          BW= (1000000000/ambiente_instancia.checker_instancia.delay_list[i].delay_prom);
-          ab={BW,ab};
-          receive_delay.itoa(ambiente_instancia.checker_instancia.delay_list[i].delay_prom);
-      fifo_dp.itoa(FIFO_D);
-          ID.itoa(i);
-          outputTXT_line = {ID,coma,fifo_dp,coma,receive_delay};
-          $system($sformatf("echo %0s >> delayterminal.csv",outputTXT_line));
-        end
-          else
-        $display ("La terminal %0d", i, " tiene delay de %0d", ambiente_instancia.checker_instancia.delay_list[i].delay_prom ," ns");
-      end
-  endtask
-  
-  task min_max_ab();
-    begin
-      real MI[$],MA[$];
-      MI=ab.min();
-      MA=ab.max();
-      ab_min.realtoa(MI[0]);
-      ab_max.realtoa(MA[0]);
-      fifo_dp.itoa(FIFO_D);
-      outputTXT_line = {fifo_dp,coma,ab_min,coma,ab_max};
-      $system($sformatf("echo %0s >> ab_prom.csv",outputTXT_line));
-      MI={};
-      ab={};
-      MA={};
-    end
-      endtask
-    
 endclass

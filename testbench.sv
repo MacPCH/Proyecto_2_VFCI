@@ -12,10 +12,12 @@ module tb();
   parameter pckg_sz = 40;
   parameter ROWS = 4;
   parameter COLUMS = 4;
-  test #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(4)) t0 ;
+  int profundidad_fifo = 4;
+  //parameter profundidad_fifo = profundidad_fifo1;
+  test #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS),.FIFO_D(4)) t0;
   
   mesh_if #(pckg_sz,ROWS,COLUMS)_if  (clk,reset); //inteface
-  mesh_gnrtr #(ROWS, COLUMS,pckg_sz, 4,{8{1'b1}}) mesh(
+  mesh_gnrtr #(ROWS, COLUMS,pckg_sz, 4, {8{1'b1}}) mesh(
     .pndng(_if.pndng),
     .data_out(_if.data_out),
     .popin(_if.popin),
@@ -29,7 +31,7 @@ module tb();
 
   
   initial begin
-    $display("PRIMERO: Cada terminal envía una transacción para ejercitar el DUT");
+
     for (int i=0; i<16;i++)
       _if.pop[i]=0;
     t0=new;

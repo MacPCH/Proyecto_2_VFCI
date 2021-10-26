@@ -33,13 +33,12 @@ class Generador #(parameter pckg_sz,ROWS,COLUMS);
                     #1;
                   end
                   trans_send = new;
+                  trans_send.num_transacciones = instruccion_especifica.num_transacciones;
                   trans_send.dispo_salida=trans.dispo_salida;
                   trans_send.dispo_entrada=i;
                   trans_send.modo=trans.modo;
                   trans_send.mensaje=trans.mensaje;
                   trans_send.tiempo_envio=$time;
-                  
-                  
                   agente_mbx.put(trans_send);
         		  ->generador_listo;
                 end
@@ -153,78 +152,7 @@ class Generador #(parameter pckg_sz,ROWS,COLUMS);
                 endcase
                 
                 
-                /*
-                repeat(16) begin 
-                  trans.randomize();
-                  trans.mensaje={pckg_sz-17{1'b0}};
-                  for (int h=0; h<=trans.delay*50;h++) begin
-                    #1;
-                  end
-                  trans_send = new;
-                  trans_send.dispo_salida=trans.dispo_salida;
-                  trans_send.dispo_entrada=trans.dispo_entrada;
-                  trans_send.modo=trans.modo;
-                  trans_send.mensaje=trans.mensaje;
-                  trans_send.tiempo_envio=$time;
-                  agente_mbx.put(trans_send);
-        			    ->generador_listo;
-                end
                 
-                repeat(16) begin 
-                  trans.randomize();
-                  trans.mensaje={pckg_sz-17{1'b1}};
-                  for (int h=0; h<=trans.delay*50;h++) begin 
-                    #1;
-                  end
-                  trans_send = new;
-                  trans_send.dispo_salida=trans.dispo_salida;
-                  trans_send.dispo_entrada=trans.dispo_entrada;
-                  trans_send.modo=trans.modo;
-                  trans_send.mensaje=trans.mensaje;
-                  trans_send.tiempo_envio=$time;
-                  agente_mbx.put(trans_send); 
-        			    ->generador_listo;
-                end
-  
-                repeat(16) begin
-                  trans.randomize();
-                  for (int i=0; i<pckg_sz-18; i++) 
-                    begin
-                      if (i%2==0) trans.mensaje[i]=0;
-                      else trans.mensaje[i]=1;
-                    end
-                  for (int h=0; h<=trans.delay*50;h++) begin
-                    #1;
-                  end
-                  trans_send = new;
-                  trans_send.dispo_salida=trans.dispo_salida;
-                  trans_send.dispo_entrada=trans.dispo_entrada;
-                  trans_send.modo=trans.modo;
-                  trans_send.mensaje=trans.mensaje;
-                  trans_send.tiempo_envio=$time; 
-                  agente_mbx.put(trans_send);
-        			    ->generador_listo;
-                  end
-
-                repeat(16) begin 
-                  trans.randomize();
-                  for (int i=0; i<pckg_sz-18; i++) 
-                    begin
-                      if (i%2==0) trans.mensaje[i]=1;
-                      else trans.mensaje[i]=0;
-                    end
-                  for (int h=0; h<=trans.delay*50;h++) begin 
-                      #1;
-                    end
-                  trans_send = new;
-                    trans_send.dispo_salida=trans.dispo_salida;
-                    trans_send.dispo_entrada=trans.dispo_entrada;
-                    trans_send.modo=trans.modo;
-                    trans_send.mensaje=trans.mensaje;
-                    trans_send.tiempo_envio=$time;
-                    agente_mbx.put(trans_send);
-        			      ->generador_listo;
-                  end*/
                 end
 
 

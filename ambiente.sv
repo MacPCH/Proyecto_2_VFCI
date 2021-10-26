@@ -2,14 +2,14 @@
 //VERIFICACIÓN FUNCIONAL DE CIRCUITOS INTEGRADOS
 //Proyecto 2
 //Lenguaje: SystemVerilog
-//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
+//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com) - Susana Astorga Rodríguez (susana.0297.ar@gmail.com)
 
 `include "interface_de_transacciones.sv"
-`include "Generador.sv"
-`include "Agente.sv"
-`include "Driver.sv"
-`include "Checker.sv"
-`include "Monitor.sv"
+`include "generador.sv"
+`include "agente.sv"
+`include "driver.sv"
+`include "checker.sv"
+`include "monitor.sv"
 
 class Ambiente #(parameter pckg_sz,ROWS,COLUMS,FIFO_D);
   

@@ -2,7 +2,7 @@
 //VERIFICACIÓN FUNCIONAL DE CIRCUITOS INTEGRADOS
 //Proyecto 2
 //Lenguaje: SystemVerilog
-//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com) - Susana Astorga Rodríguez (susana.0297.ar@gmail.com)
+//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
 
 // Generador
 class Generador #(parameter pckg_sz,ROWS,COLUMS);
@@ -29,7 +29,7 @@ class Generador #(parameter pckg_sz,ROWS,COLUMS);
                 for (int i=0; i<ROWS*COLUMS; i++) begin
                   la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) trans = new; // crea una nueva transacción
                   trans.randomize();
-                  for (int h=0; h<=trans.delay*100;h++) begin
+                  for (int h=0; h<=trans.retraso*100;h++) begin
                     #1;
                   end
                   trans_send = new;
@@ -58,7 +58,7 @@ class Generador #(parameter pckg_sz,ROWS,COLUMS);
                 for (int i=0; i< instruccion_especifica.num_transacciones; i++) begin 
                   la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) trans = new;
                   trans.randomize();
-                  for (int h=0; h<=trans.delay*100;h++) begin
+                  for (int h=0; h<=trans.retraso*100;h++) begin
                     #1;
                   end
                   trans_send = new;
@@ -90,7 +90,7 @@ class Generador #(parameter pckg_sz,ROWS,COLUMS);
                       la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) trans = new;
                       trans.randomize();
                       trans.mensaje={pckg_sz-17{1'b0}};
-                      for (int h=0; h<=trans.delay*50;h++) begin
+                      for (int h=0; h<=trans.retraso*50;h++) begin
                         #1;
                       end
                       trans_send = new;
@@ -111,7 +111,7 @@ class Generador #(parameter pckg_sz,ROWS,COLUMS);
                       la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) trans = new;
                       trans.randomize();
                       trans.mensaje={pckg_sz-17{1'b0}};
-                      for (int h=0; h<=trans.delay*50;h++) begin
+                      for (int h=0; h<=trans.retraso*50;h++) begin
                         #1;
                       end
                       trans_send = new;
@@ -135,7 +135,7 @@ class Generador #(parameter pckg_sz,ROWS,COLUMS);
                       for (int i=0; i< instruccion_especifica.num_transacciones; i++) begin
                       la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) trans = new;
                       trans.randomize();
-                      for (int h=0; h<=trans.delay*50;h++) begin
+                      for (int h=0; h<=trans.retraso*50;h++) begin
                         #1;
                       end
                       trans_send = new;
@@ -158,25 +158,23 @@ class Generador #(parameter pckg_sz,ROWS,COLUMS);
 
              overflow: 
                begin
-                 int dispo_entrada_overflow;
-                 dispo_entrada_overflow=$urandom_range(0,15);
                  for (int i=0; i<instruccion_especifica.num_transacciones; i++) begin 
                   la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) trans = new;
                   trans.randomize();
-                  for (int h=0; h<=trans.delay;h++) begin
+                  for (int h=0; h<=trans.retraso;h++) begin
                     #1;
                   end
-                   if (trans.dispo_salida!=dispo_entrada_overflow) begin
+                   //if (trans.dispo_salida!=dispo_entrada_overflow) begin
                      trans_send = new;
                      trans_send.num_transacciones = instruccion_especifica.num_transacciones;
-                     trans_send.dispo_salida=trans.dispo_salida;
-                     trans_send.dispo_entrada=dispo_entrada_overflow;
+                     trans_send.dispo_salida = trans.dispo_salida;
+                     trans_send.dispo_entrada = 10;
                      trans_send.modo=trans.modo;
                      trans_send.mensaje=trans.mensaje;
                      trans_send.tiempo_envio=$time;
                      agente_mbx.put(trans_send);
         			 ->generador_listo;
-                   end
+                   //end
                  end
                end
              

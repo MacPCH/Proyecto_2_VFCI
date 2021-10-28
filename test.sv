@@ -54,7 +54,7 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     //num_reportes: 6=ab y retraso_dispositivo, 7=retraso_total y retraso_dispositivo
     tipo_reporte = new();
     tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
-    tipo_reporte.num_reportes = 1; //reporte del tipo ancho de banda
+    tipo_reporte.num_reportes = 4; //reporte del tipo ancho de banda
     tipo_reporte.profundidad_fifo = FIFO_D;
     tipo_reporte.fin_prueba = 100000 * contador;
     test_checker_mbx.put(tipo_reporte); //envío el reporte generado hacia el test checker
@@ -88,7 +88,7 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     
     tipo_reporte = new;
     tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
-    tipo_reporte.num_reportes = 2;
+    tipo_reporte.num_reportes = 4;
     tipo_reporte.profundidad_fifo = FIFO_D;
     tipo_reporte.fin_prueba = 100000 * contador;
     $display ("Test: Enviado al checker: ", tipo_reporte);

@@ -4,17 +4,19 @@
 //Lenguaje: SystemVerilog
 //Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
 
+// clase que sirve como copia de seguridad para hacer gurdar los retrasos de los dispositivos y ser guradados en reportes
 class retraso_terminal;
-  int num_transactions = 0;
+  int numero_trans = 0;
   int retraso = 0;
   int retraso_prom;
-  int identifier; 
+  int identi; 
 endclass
 
+// clase principal del checker para comprobar y reportar los resultados del test
 class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
-
-    string mensaje, dispo_entrada, dispo_salida, tiempo_llegada, tsend, receive_retraso,ID;
-    string outputTXT_line, comma = ",";
+    //variables varias para hacer las comporbaciones y tambien para guardar los datos en reportes
+    string mensaje, dispo_entrada, dispo_salida, tiempo_llegada, tsend, retraso_entrante,ID;
+    string concatenado;
     bit timeout = 1'b0;
   	int sal=0;
   	int tiempo_salvado;
@@ -22,62 +24,60 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
   	time tiempo_salvado3 = 0;
     int retraso_total=0; 
     int retraso_prom;
-    real BW;
-    real ab[$];
-    string fifo_dp,receive_retraso,ID,ab_min,ab_max;
+    real calculo_ancho_banda;
+    real ancho_banda[$];
+    string dispo_fifo;
+    string identificador,ancho_banda_min,ancho_banda_max;
   	int contador4=1;
   	int contador22=1;
     int num_transacciones = 0;
     event agente_listo;
     event monitor_listo;
   	event checker_listo;
-    bit [pckg_sz-9:0] data_in;
+    bit [pckg_sz-9:0] empaque;
     time retrasos [$];
     int time_retraso;
   	int contador = 1;
     bit error;
   	int profundidad_fifo;
   	int numero_reporte;
-  	
-    retraso_terminal retraso_list [$];
-  	la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) paquete;
+    int contador5=0;
+    retraso_terminal retraso_list [$]; //instacia para guardar los retrasos
+
+  	la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) paquete; //instancia para guardar lo que venga del agente
+    // definicion de los mailboxes
     mailbox checker_mbx;
     mailbox monitor_mbx;
   	mailbox test_mbx;
   	comando_test_checker_mbx test_checker_mbx;
     tipos_de_reportes tipo_reporte = new();
-  	
-    int j=0; 
 
-  la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) scb[$];
+  la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) del_agente_comproba[$];
 
-    task retraso_terminal_prom(); 
-      
+    task retraso_terminal_prom(); // tarea independiente para el guardado de los retrasos por cada terminal en una pila
       for (int i =0 ; i<=ROWS*COLUMS ; i++) begin
-            retraso_terminal  retraso_new = new();
-            retraso_new.identifier=i; 
-            retraso_new.num_transactions=0; 
-            retraso_new.retraso=0; 
-            retraso_new.retraso_prom=0; 
-            retraso_list.insert(i, retraso_new); 
+            retraso_terminal  retraso_por_dispo = new();
+            retraso_por_dispo.identi=i; 
+            retraso_por_dispo.numero_trans=0; 
+            retraso_por_dispo.retraso=0; 
+            retraso_por_dispo.retraso_prom=0; 
+            retraso_list.insert(i, retraso_por_dispo); 
       end
     endtask
-
+    // tarea no independiente del ambiente, se encarga de establecer todo lo necesario para comporoacion, reporte y parada de cada test 
     task run(); 
       $display ("El checker fue inicializado");
+      // para el gurdado de los reportes
       $system("echo Dispositivo,Tiempo_Envio ns,Terminal_Procedencia,Dato,Tiempo_Recibido[ns],Terminal_Llegada,Retraso[ns] > salida.txt");
       $system("echo Profundidad_FIFO, retraso ns > retrasoprom.csv");
-      $system("echo Dispositivo,Tiempo_Envio ns,Terminal_Procedencia,Dato,Tiempo_Recibido[ns],Terminal_Llegada,Retraso[ns] > ab_prom.csv");
+      $system("echo Profundidad_FIFO, min, max > ancho_banda_promedio.csv");
       $system("echo Dispositivo, profundidad_FIFO, retraso ns > retrasoterminal.csv");
         forever begin
-          //always @(posedge (interface_virtual.clk)) $display("Tiempo actual = %0d", $time);
           @(agente_listo)
             begin
               $display("Checker: Agente listo: ");
-              /*@(monitor_listo) 
-            begin*/
               forever begin
-                if(checker_mbx.num!=0) begin
+                if(checker_mbx.num!=0) begin // se obtiene toda la inforamcion para desde el agente para hacer la comprobacion de los datos
                 la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) del_agente = new();
                 checker_mbx.get(paquete); 
                 del_agente.dispo_salida= paquete.dispo_salida;
@@ -87,13 +87,11 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
                 del_agente.empaquetado=paquete.empaquetado;
                 del_agente.tiempo_envio=paquete.tiempo_envio;
                 del_agente.tiempo_llegada=paquete.tiempo_llegada;
-                scb.push_front(del_agente);
+                del_agente_comproba.push_front(del_agente);
                 tiempo_salvado3 = $time;
-                //$display("Checker: Lo que viene del checker ", paquete1);
             end 
-                if (test_checker_mbx.num() == 1)begin
+                if (test_checker_mbx.num() == 1)begin //se encarga de obtener los reportes desde el test para saber que hacer a la hora de terminar cada test
                   int salva = test_checker_mbx.num();
-                  $display("Numero de solicitudes de reportes en el mailbox = %0d", test_checker_mbx.num());
                   test_checker_mbx.get(tipo_reporte);
                   num_transacciones = tipo_reporte.num_transacciones;
                   numero_reporte = tipo_reporte.num_reportes;
@@ -102,55 +100,54 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
                 if(checker_mbx.num==0) break;
               end
             end
-   	   #50000@(checker_listo)begin
-         if (num_transacciones >= contador) begin 
+   	   #50000@(checker_listo)begin //si el ya paso el tiempo establecido desde el test, se recibe la instruccion de que se debe de reportar
+         if (num_transacciones >= contador) begin //en el caso de que el tiempo haya pasado y no coincida el numero de transacciones desde el agente con respecto a las encontradas
+                                                  // por el checker
            $display("Hubo perdida de comprobacion de datos por overflow");
          end
            
        case(numero_reporte)
          1: begin
            $display("Checker: HOLA! SOY EL CASO DE REPORTE 1");
-           get_retraso();
-           min_max_ab();
+           guardado_retraso();
+           extremos_ancho_banda();
 
          end
          2: begin
            $display("Checker: HOLA! SOY EL CASO DE REPORTE 2");
-           get_retraso();
-           min_max_ab();
+           guardado_retraso();
+           extremos_ancho_banda();
          end
          3: begin
            $display("Checker: HOLA! SOY EL CASO DE REPORTE 3");
-           get_retraso_terminal();
-           min_max_ab();
+           guardado_retraso_terminal();
+           extremos_ancho_banda();
          end
          4: begin
            $display("Checker: HOLA! SOY EL CASO DE REPORTE 4");
-           get_retraso();
-           get_retraso_terminal();
-           min_max_ab();
+           guardado_retraso();
+           guardado_retraso_terminal();
+           extremos_ancho_banda();
          end
          5: begin
            $display("Checker: HOLA! SOY EL CASO DE REPORTE 5");
-           get_retraso();
-           min_max_ab();
+           guardado_retraso();
+           extremos_ancho_banda();
          end
          6: begin
            $display("Checker: HOLA! SOY EL CASO DE REPORTE 6");
-           get_retraso();
-           get_retraso_terminal();
-           min_max_ab();
+           guardado_retraso();
+           guardado_retraso_terminal();
+           extremos_ancho_banda();
          end
          7: begin
            $display("Checker: HOLA! SOY EL CASO DE REPORTE 7");
-           get_retraso();
-           get_retraso_terminal();
-           min_max_ab();
+           guardado_retraso();
+           guardado_retraso_terminal();
+           extremos_ancho_banda();
          end
        endcase
-       contador = 1;
-       //tiempo_salvado = 0;
-       tiempo_salvado2 = $time;
+       contador = 1; // se restablece el contador del numero de transacciones contabilizadas
      end
         end
     endtask
@@ -159,21 +156,15 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
   	
    task check(); 
    forever begin
-     tiempo_salvado = $time;
-     $display("Tiempo actual = %0d", $time);
-     
-     
-     @(monitor_listo)
+     @(monitor_listo) //cada vez que el evento del monitor listo se dispara, se comprueba en la base de datos
         begin
-          $display("CNumero de veces que el contador estuvo listo: %0d", contador4);
-          contador4++;
           $display("Checker: Monitor listo: ");
           forever begin
-          la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) paquete_monitor=new();
-            monitor_mbx.get(data_in);
-            paquete_monitor.data=data_in;
+          la_mama_de_las_transacciones #(.pckg_sz(pckg_sz),.ROWS(ROWS),.COLUMS(COLUMS)) paquete_monitor=new(); //instancia para gurdar lo que viene del monitor
+            monitor_mbx.get(empaque);
+            paquete_monitor.data=empaque;
             paquete_monitor.tiempo_llegada=$time;
-      case(data_in [pckg_sz-9: pckg_sz-16])
+      case(empaque [pckg_sz-9: pckg_sz-16]) //discimino el valor en decimal del significado en fila columna para saber que dispositivo es al que se refiere el monitor
         1:
           paquete_monitor.dispo_entrada=0;
         2:
@@ -207,72 +198,49 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
         69:
           paquete_monitor.dispo_entrada=15;
  		    default:
-          paquete_monitor.dispo_entrada=16;
+          paquete_monitor.dispo_entrada=15;
 
     endcase
-          //$display("Checker: Lo que viene del monitor: ", paquete_monitor);
-            sal = $time-tiempo_salvado3;
-            //$display("Tiempo actual = %0d", $time);
-            /*if(sal > 1688) begin
-              $display("Cambio de prueba! tiempo cal = %0d, tiempo salvado = %0d, tiempo actual = %0d", sal, tiempo_salvado3, $time); 
-              timeout = 1'b1;
-          end*/
-            
-            for (int i=0; i<scb.size(); i++) 
+            for (int i=0; i<del_agente_comproba.size(); i++) 
                 begin
-                  
-                  tiempo_salvado = $realtime;
-                  //$display("Tiempo salvado = %0d", tiempo_salvado);
-                    error=0; 
-                    if (paquete_monitor.data==scb[i].empaquetado[pckg_sz-9:0]) 
+                    error=0; //centinela en caso de no encontarar relacion entre un dato y su dispositivo
+                    if (paquete_monitor.data==del_agente_comproba[i].empaquetado[pckg_sz-9:0]) //si hay igualdad en lo obtenido por el agente y el monitor para el empaquetado
                         begin
-                          if (paquete_monitor.dispo_entrada==scb[i].dispo_entrada) 
+                          if (paquete_monitor.dispo_entrada==del_agente_comproba[i].dispo_entrada) //si el dispositivo de entrada coincide fuera de lo del empaquetado
                             begin
-                            error=1; 
-                            time_retraso= paquete_monitor.tiempo_llegada-(scb[i].tiempo_envio);
-                            retrasos.insert(j,time_retraso);
-                              tiempo_salvado = $time - tiempo_salvado2;
-                              $display("t = %0d: Checker: Dispositivo que llega del DUT: %d, dispositivo esperado: %d", $time, paquete_monitor.dispo_entrada, scb[i].dispo_entrada);
-                              $display("t = %0d: Checker: Dato que llega del DUT: %d, dato esperado: %d", $time, paquete_monitor.data, scb[i].empaquetado[pckg_sz-9:0]);
-                              $display("t = %0d: Checker: Todo bien, todo correcto y yo que me alegro, transaccion = ", $time, contador);
-                              
-                              $display("Diracion del checkeo = %0d", tiempo_salvado2-tiempo_salvado);
-                              tiempo_salvado2 = $time;
-                              contador++;
-                              for (int k=0; k<16; k++) 
-                              begin
-                                if (k==scb[i].dispo_entrada)
-                                  begin
-                                    retraso_list[k].retraso=retraso_list[k].retraso+time_retraso; 
-                                    retraso_list[k].num_transactions= retraso_list[k].num_transactions+1; 
-                                  end
-                                
-                              end
+                            error=1; //no hubo problema, apartir de aqui solo se indica al usuario que todo esta bien y se genera un reporte generico con todo los datos como si fuera un log
+                            time_retraso= paquete_monitor.tiempo_llegada-(del_agente_comproba[i].tiempo_envio); //calculo del retraso para el dispositivo en concreto
+                            retrasos.insert(contador5,time_retraso); //se ingresa la info a la pila correspondiente
+                            $display("t = %0d: Checker: Dispositivo que llega del DUT: %d, dispositivo esperado: %d", $time, paquete_monitor.dispo_entrada, del_agente_comproba[i].dispo_entrada);
+                            $display("t = %0d: Checker: Dato que llega del DUT: %d, dato esperado: %d", $time, paquete_monitor.data, del_agente_comproba[i].empaquetado[pckg_sz-9:0]);
+                            $display("t = %0d: Checker: Todo bien, todo correcto y yo que me alegro, transaccion = ", $time, contador);
+                            contador++; // se cuenta el numero de transacciones exitosas para luego saber si hubo perdida de datos 
+                            tiempo_llegada.itoa(paquete_monitor.tiempo_llegada);
+                            tsend.itoa(del_agente_comproba[i].tiempo_envio);
                             mensaje.itoa(paquete_monitor.data);
                             dispo_entrada.itoa(paquete_monitor.dispo_entrada);
-                            dispo_salida.itoa(scb[i].dispo_salida);
-                            tiempo_llegada.itoa(paquete_monitor.tiempo_llegada);
-                            tsend.itoa(scb[i].tiempo_envio);
-                            receive_retraso.itoa(time_retraso);
-                            ID.itoa(j);
-                            
-                            outputTXT_line = {ID,comma,tsend,comma,dispo_salida,comma,mensaje,comma,tiempo_llegada,comma,dispo_entrada,comma,receive_retraso};
-                              $system($sformatf("echo %0s >> salida.txt",outputTXT_line));
+                            dispo_salida.itoa(del_agente_comproba[i].dispo_salida);
+                            retraso_entrante.itoa(time_retraso);
+                            identificador.itoa(contador5);
+                            concatenado = {identificador,",",tsend,",",dispo_salida,",",mensaje,",",tiempo_llegada,",",dispo_entrada,",",retraso_entrante};
+                            $system($sformatf("echo %0s >> salida.txt",concatenado));
+                            for (int h=0; h<16; h++) //se barre en los 16 dispositivos para asignar los retrasos correspondientes para el reporte
+                            begin
+                              if (h==del_agente_comproba[i].dispo_entrada)
+                                begin
+                                  retraso_list[h].retraso=retraso_list[h].retraso+time_retraso; 
+                                  retraso_list[h].numero_trans= retraso_list[h].numero_trans+1; 
+                                end
+                            end
                             break; 
                             error = 1;
                             end
                     else $fatal("EL DISPOSITIVO DE LLEGADA Y EL DESTINO DEL MENSAJE NO CONCUERDAN");
-                    
                 end
-                  tiempo_salvado2 = $time;
-                  
                 end
-            j=j+1;
-          	contador22++;
-            
+            contador5=contador5+1;
           end
         end
-     
      if (!error) begin $fatal("ERROR, EL DATO RECIBIDO POR EL DRIVER NO CORRESPONDE A NINGÚN DATO ENVIADO"); end
      
     end
@@ -280,49 +248,50 @@ class Checker #(parameter pckg_sz,  ROWS,  COLUMS,  FIFO_depth);
      
   endtask
   
- task get_retraso();
+ task guardado_retraso();
     for (int i=0; i< retrasos.size(); i++)begin
       retraso_total= (retraso_total+retrasos[i]); 
       end
     	retraso_prom=(retraso_total/retrasos.size()); 
       $display("El retraso promedio es de %0d",retraso_prom, " ns para una profundidad de Fifo de %0d",profundidad_fifo);
-    	BW= (1000000000/retraso_prom); 
-      $display("El ancho de banda promedio es de %0d", BW, " bps para una profundidad de Fifo de %0d",profundidad_fifo);
-      receive_retraso.itoa(retraso_prom);
-      fifo_dp.itoa(profundidad_fifo);
-      outputTXT_line = {fifo_dp,",",receive_retraso};
-      $system($sformatf("echo %0s >> retrasoprom.csv",outputTXT_line));
+    	calculo_ancho_banda= (1000000000/retraso_prom); 
+      $display("El ancho de banda promedio es de %0d", calculo_ancho_banda, " para una profundidad de Fifo de %0d",profundidad_fifo);
+      retraso_entrante.itoa(retraso_prom);
+      dispo_fifo.itoa(profundidad_fifo);
+      concatenado = {dispo_fifo,",",retraso_entrante};
+      $system($sformatf("echo %0s >> retrasoprom.csv",concatenado));
   endtask
   
   
-  task get_retraso_terminal();
+  task guardado_retraso_terminal();
     for (int i=0; i<16; i++)
       begin
-        retraso_list[i].retraso_prom= retraso_list[i].retraso/ (retraso_list[i].num_transactions);
+        retraso_list[i].retraso_prom= retraso_list[i].retraso/ (retraso_list[i].numero_trans);
           $display ("La terminal %0d", i, " tiene retraso de %0d", retraso_list[i].retraso_prom ," ns con una profundidad de Fifo de %0d",profundidad_fifo);
-          BW= (1000000000/retraso_list[i].retraso_prom);
-          ab={BW,ab};
-          receive_retraso.itoa(retraso_list[i].retraso_prom);
-          fifo_dp.itoa(profundidad_fifo);
-          ID.itoa(i);
-          outputTXT_line = {ID,",",fifo_dp,",",receive_retraso};
-          $system($sformatf("echo %0s >> retrasoterminal.csv",outputTXT_line));
+          calculo_ancho_banda= (1000000000/retraso_list[i].retraso_prom);
+          ancho_banda={calculo_ancho_banda,ancho_banda};
+          retraso_entrante.itoa(retraso_list[i].retraso_prom);
+          dispo_fifo.itoa(profundidad_fifo);
+          identificador.itoa(i);
+          concatenado = {identificador,",",dispo_fifo,",",retraso_entrante};
+          $system($sformatf("echo %0s >> retrasoterminal.csv",concatenado));
       end
   endtask
 
-  task min_max_ab();
+  task extremos_ancho_banda();
     begin
-      real MI[$],MA[$];
-      MI=ab.min();
-      MA=ab.max();
-      ab_min.realtoa(MI[0]);
-      ab_max.realtoa(MA[0]);
-      fifo_dp.itoa(profundidad_fifo);
-      outputTXT_line = {fifo_dp,",",ab_min,",",ab_max};
-      $system($sformatf("echo %0s >> ab_prom.csv",outputTXT_line));
-      MI={};
-      ab={};
-      MA={};
+      real minimo[$];
+      real maximo[$];
+      maximo=ancho_banda.max();
+      minimo=ancho_banda.min();
+      ancho_banda_min.realtoa(minimo[0]);
+      ancho_banda_max.realtoa(maximo[0]);
+      dispo_fifo.itoa(profundidad_fifo);
+      concatenado = {dispo_fifo,",",ancho_banda_min,",",ancho_banda_max};
+      $system($sformatf("echo %0s >> ancho_banda_promedio.csv",concatenado));
+      minimo={};
+      maximo={};
+      ancho_banda={};
     end
       endtask
     

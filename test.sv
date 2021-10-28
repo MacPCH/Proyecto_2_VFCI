@@ -47,8 +47,8 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     $display ("Test: Enviado al generador: ", instruccion_especifica);
     test_generador_mbx.put(instruccion_especifica);
     
-    //num_reportes: 1=ab, 2=retraso_total, 3=retraso_dispositivo, 4=todos, 5=ab y retraso_total 
-    //num_reportes: 6=ab y retraso_dispositivo, 7=retraso_total y retraso_dispositivo
+    //num_reportes: 1=ancho_banda, 2=retraso_total, 3=retraso_dispositivo, 4=todos, 5=ancho_banda y retraso_total 
+    //num_reportes: 6=ancho_banda y retraso_dispositivo, 7=retraso_total y retraso_dispositivo
     tipo_reporte = new();
     tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
     tipo_reporte.num_reportes = 1;

@@ -2,7 +2,7 @@
 //VERIFICACIÓN FUNCIONAL DE CIRCUITOS INTEGRADOS
 //Proyecto 2
 //Lenguaje: SystemVerilog
-//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com)
+//Creado por: Mac Alfred Pinnock Chacón (mcalfred32@gmail.com) - Susana Astorga Rodríguez (susana.0297.ar@gmail.com)
 
 // Se incluyen las librerias usadas por el test
 `include "interface_de_transacciones.sv"

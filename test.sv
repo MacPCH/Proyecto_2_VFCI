@@ -205,41 +205,10 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     for (int i=0; i<16;i++) tb._if.pop[i]=1;
     
-    //Cuarto escenario de pruebas y segundo test (error)
+    //Cuarto escenario de pruebas y tercer test (destino igual al origen)
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador-1);
-    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
-    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
-    
-    instruccion_especifica = new;
-  	instruccion_especifica.tipo = esquina;
-    instruccion_especifica.num_transacciones = 3;
-    instruccion_especifica.esquina = error;
-    $display ("Test: Enviado al generador: ", instruccion_especifica);
-    test_generador_mbx.put(instruccion_especifica);
-    
-    tipo_reporte = new();
-    tipo_reporte.num_transacciones = instruccion_especifica.num_transacciones;
-    tipo_reporte.num_reportes = 4;
-    tipo_reporte.profundidad_fifo = FIFO_D;
-    test_checker_mbx.put(tipo_reporte);
-    $display ("Test: Enviado al checker: ", tipo_reporte);
-    
-    #100000
-    ->checker_listo;
-    #5
-    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
-    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" FIN DEL TEST %0d DE PRUEBAS", contador-1);
-    $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
-    $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
-    for (int i=0; i<16;i++) tb._if.pop[i]=1;
-    
-    //Cuarto escenario de pruebas y segundo test (destino igual al origen)
-    $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
-    $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador);
+    $display (" INICIO DEL TEST %0d DE PRUEBAS", contador -1);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     
@@ -262,7 +231,7 @@ class test#(parameter pckg_sz,FIFO_D,ROWS,COLUMS);
     #5
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
     $display ("-- / -- / -- / -- / -- / -- / -- / -- /");
-    $display (" FIN DEL TEST %0d DE PRUEBAS", contador);
+    $display (" FIN DEL TEST %0d DE PRUEBAS", contador -1);
     $display ("/-- /-- /-- /-- /-- /-- /-- /-- /-- /--");
     $display ("\\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\-- \\--");
     $display ("-- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\ -- \\");
